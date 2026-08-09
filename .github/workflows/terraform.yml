@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -33,11 +32,11 @@ jobs:
         run: |
           az login --service-principal \
             --username "25acc71a-cf92-4cb6-9c88-646878e3b993" \
-            --password "NEW_CLIENT_SECRET_HERE" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
             --tenant "bc0de973-fa87-4900-94ad-2ac1ab72d129"
 
           az account set \
-            --subscription "YOUR_SUBSCRIPTION_ID"
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
 
       - name: Verify Azure Login
         run: az account show
