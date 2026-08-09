@@ -14,10 +14,9 @@ permissions:
   contents: read
 
 env:
-  TF_WORKING_DIR: enviroment/preprod
+  TF_WORKING_DIR: environment/preprod
 
 jobs:
-
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
@@ -30,9 +29,22 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Azure Login
+        run: |
+          az login --service-principal \
+            --username "25acc71a-cf92-4cb6-9c88-646878e3b993" \
+            --password "NEW_CLIENT_SECRET_HERE" \
+            --tenant "bc0de973-fa87-4900-94ad-2ac1ab72d129"
+
+          az account set \
+            --subscription "YOUR_SUBSCRIPTION_ID"
+
+      - name: Verify Azure Login
+        run: az account show
+
       - name: Terraform Format
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform fmt -check
+        run: terraform fmt -check -recursive
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
