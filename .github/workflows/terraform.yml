@@ -13,44 +13,122 @@ permissions:
   contents: read
   id-token: write
 
-env:
-  TF_WORKING_DIR: environment/preprod
-
 jobs:
-  terraform-plan:
+  terraform:
     name: Terraform Plan
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      # --------------------------------------------------
+      # 1. Checkout Repository
+      # --------------------------------------------------
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # --------------------------------------------------
+      # 2. Check Repository Structure
+      # --------------------------------------------------
+      - name: Check Repository Structure
+        shell: bash
+        run: |
+          echo "===================================="
+          echo "Current Directory"
+          echo "===================================="
+          pwd
+
+          echo ""
+          echo "===================================="
+          echo "Repository Root"
+          echo "===================================="
+          ls -la
+
+          echo ""
+          echo "===================================="
+          echo "Terraform Files"
+          echo "===================================="
+          find . -name "*.tf" -type f | sort
+
+          echo ""
+          echo "===================================="
+          echo "Directories"
+          echo "===================================="
+          find . -type d | sort
+
+      # --------------------------------------------------
+      # 3. Setup Terraform
+      # --------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # --------------------------------------------------
+      # 4. Verify Terraform Installation
+      # --------------------------------------------------
+      - name: Check Terraform Version
+        run: terraform version
+
+      # --------------------------------------------------
+      # 5. Verify Terraform Directory
+      # --------------------------------------------------
+      - name: Verify Terraform Directory
+        shell: bash
+        run: |
+          if [ -d "./environment/preprod" ]; then
+            echo "Terraform directory exists ✅"
+            echo ""
+            echo "Contents:"
+            ls -la ./environment/preprod
+          else
+            echo "ERROR: ./environment/preprod directory does not exist ❌"
+            echo ""
+            echo "Available directories:"
+            find . -type d | sort
+            exit 1
+          fi
+
+      # --------------------------------------------------
+      # 6. Azure Login using OIDC
+      # --------------------------------------------------
       - name: Azure Login
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          auth-type: SERVICE_PRINCIPAL
 
+      # --------------------------------------------------
+      # 7. Verify Azure Login
+      # --------------------------------------------------
       - name: Verify Azure Login
-        run: az account show
+        shell: bash
+        run: |
+          az account show
+          echo ""
+          az account list -o table
 
-      - name: Terraform Format
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform fmt -check -recursive
-
+      # --------------------------------------------------
+      # 8. Terraform Init
+      # --------------------------------------------------
       - name: Terraform Init
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ./environment/preprod
         run: terraform init
 
+      # --------------------------------------------------
+      # 9. Terraform Format Check
+      # --------------------------------------------------
+      - name: Terraform Format Check
+        working-directory: ./environment/preprod
+        run: terraform fmt -check -recursive
+
+      # --------------------------------------------------
+      # 10. Terraform Validate
+      # --------------------------------------------------
       - name: Terraform Validate
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ./environment/preprod
         run: terraform validate
 
+      # --------------------------------------------------
+      # 11. Terraform Plan
+      # --------------------------------------------------
       - name: Terraform Plan
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ./environment/preprod
         run: terraform plan
