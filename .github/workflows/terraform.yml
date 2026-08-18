@@ -3,11 +3,13 @@ name: Terraform CI/CD
 on:
   push:
     branches:
-      - Azure_landing_zone-in-deep
+      - feature/github-actions-pipeline
 
   pull_request:
     branches:
-      - Azure_landing_zone-in-deep
+      - main
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,75 +21,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --------------------------------------------------
-      # 1. Checkout Repository
-      # --------------------------------------------------
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # --------------------------------------------------
-      # 2. Check Repository Structure
-      # --------------------------------------------------
-      - name: Check Repository Structure
-        shell: bash
-        run: |
-          echo "===================================="
-          echo "Current Directory"
-          echo "===================================="
-          pwd
-
-          echo ""
-          echo "===================================="
-          echo "Repository Root"
-          echo "===================================="
-          ls -la
-
-          echo ""
-          echo "===================================="
-          echo "Terraform Files"
-          echo "===================================="
-          find . -name "*.tf" -type f | sort
-
-          echo ""
-          echo "===================================="
-          echo "Directories"
-          echo "===================================="
-          find . -type d | sort
-
-      # --------------------------------------------------
-      # 3. Setup Terraform
-      # --------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # --------------------------------------------------
-      # 4. Verify Terraform Installation
-      # --------------------------------------------------
-      - name: Check Terraform Version
-        run: terraform version
-
-      # --------------------------------------------------
-      # 5. Verify Terraform Directory
-      # --------------------------------------------------
-      - name: Verify Terraform Directory
+      - name: Check Terraform Directory
         shell: bash
         run: |
+          echo "Checking Terraform directory..."
+
           if [ -d "./enviroment/preprod" ]; then
             echo "Terraform directory exists ✅"
-            echo ""
-            echo "Contents:"
             ls -la ./enviroment/preprod
           else
             echo "ERROR: ./enviroment/preprod directory does not exist ❌"
-            echo ""
-            echo "Available directories:"
-            find . -type d | sort
+            find . -maxdepth 3 -type d | sort
             exit 1
           fi
 
-      # --------------------------------------------------
-      # 6. Azure Login using OIDC
-      # --------------------------------------------------
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -95,40 +49,23 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # --------------------------------------------------
-      # 7. Verify Azure Login
-      # --------------------------------------------------
       - name: Verify Azure Login
         shell: bash
         run: |
           az account show
-          echo ""
-          az account list -o table
 
-      # --------------------------------------------------
-      # 8. Terraform Init
-      # --------------------------------------------------
       - name: Terraform Init
         working-directory: ./enviroment/preprod
         run: terraform init
 
-      # --------------------------------------------------
-      # 9. Terraform Format Check
-      # --------------------------------------------------
       - name: Terraform Format Check
         working-directory: ./enviroment/preprod
         run: terraform fmt -check -recursive
 
-      # --------------------------------------------------
-      # 10. Terraform Validate
-      # --------------------------------------------------
       - name: Terraform Validate
         working-directory: ./enviroment/preprod
         run: terraform validate
 
-      # --------------------------------------------------
-      # 11. Terraform Plan
-      # --------------------------------------------------
       - name: Terraform Plan
         working-directory: ./enviroment/preprod
         run: terraform plan
