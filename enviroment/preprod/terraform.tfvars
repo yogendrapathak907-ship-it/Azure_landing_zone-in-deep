@@ -11,6 +11,10 @@ rgs = {
     name     = "rg-siemense-dev"
     location = "malaysiawest"
   }
+  rg4 = {
+    name     = "rg-chochu-dev"
+    location = "malaysiawest"
+  }
 }
 
 vnets = {
