@@ -20,7 +20,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./environment/preprod
+        working-directory: environment/preprod
 
     steps:
       - name: Checkout repository
