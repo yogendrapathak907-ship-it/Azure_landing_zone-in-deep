@@ -13,30 +13,27 @@ permissions:
   contents: read
   id-token: write
 
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: environment/preprod
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check repository structure
+        run: |
+          echo "Current directory:"
+          pwd
+
+          echo "Repository files:"
+          ls -la
+
+          echo "Directory structure:"
+          find . -maxdepth 4 -type f | sort
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Format Check
-        run: terraform fmt -check
-        
-      - name: Terraform Validate
-        run: terraform validate
 
       - name: Azure Login
         uses: azure/login@v2
@@ -45,14 +42,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Terraform Init
+        working-directory: ./environment/preprod
+        run: terraform init
+
+      - name: Terraform Format Check
+        working-directory: ./environment/preprod
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        working-directory: ./environment/preprod
+        run: terraform validate
+
       - name: Terraform Plan
+        working-directory: ./environment/preprod
         run: terraform plan
-      
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: feature/github-actions-pipeline
-          title: "Terraform changes"
-          body: "Automatically created Pull Request"
