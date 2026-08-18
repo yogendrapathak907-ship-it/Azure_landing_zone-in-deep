@@ -12,7 +12,7 @@ rgs = {
     location = "malaysiawest"
   }
   rg4 = {
-    name     = "rg-chochu-dev"
+    name     = "rg-duggu-dev"
     location = "malaysiawest"
   }
 }
