@@ -72,13 +72,13 @@ jobs:
       - name: Verify Terraform Directory
         shell: bash
         run: |
-          if [ -d "./environment/preprod" ]; then
+          if [ -d "./enviroment/preprod" ]; then
             echo "Terraform directory exists ✅"
             echo ""
             echo "Contents:"
-            ls -la ./environment/preprod
+            ls -la ./enviroment/preprod
           else
-            echo "ERROR: ./environment/preprod directory does not exist ❌"
+            echo "ERROR: ./enviroment/preprod directory does not exist ❌"
             echo ""
             echo "Available directories:"
             find . -type d | sort
@@ -109,26 +109,26 @@ jobs:
       # 8. Terraform Init
       # --------------------------------------------------
       - name: Terraform Init
-        working-directory: ./environment/preprod
+        working-directory: ./enviroment/preprod
         run: terraform init
 
       # --------------------------------------------------
       # 9. Terraform Format Check
       # --------------------------------------------------
       - name: Terraform Format Check
-        working-directory: ./environment/preprod
+        working-directory: ./enviroment/preprod
         run: terraform fmt -check -recursive
 
       # --------------------------------------------------
       # 10. Terraform Validate
       # --------------------------------------------------
       - name: Terraform Validate
-        working-directory: ./environment/preprod
+        working-directory: ./enviroment/preprod
         run: terraform validate
 
       # --------------------------------------------------
       # 11. Terraform Plan
       # --------------------------------------------------
       - name: Terraform Plan
-        working-directory: ./environment/preprod
+        working-directory: ./enviroment/preprod
         run: terraform plan
