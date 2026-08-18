@@ -7,8 +7,8 @@ terraform {
   }
   backend "azurerm" {
     resource_group_name  = "rg_god"
-    storage_account_name = "mygodstorage"
-    container_name       = "mygodcontainer"
+    storage_account_name = "rahul007"
+    container_name       = "tfstate"
     key                  = "preprod.tfstate"
   }
 }
