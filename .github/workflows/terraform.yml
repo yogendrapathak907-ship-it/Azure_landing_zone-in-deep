@@ -7,9 +7,7 @@ on:
 
   pull_request:
     branches:
-      - main
-
-  workflow_dispatch:
+      - feature/github-actions-pipeline
 
 permissions:
   contents: read
@@ -21,26 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
-      - name: Check Terraform Directory
-        shell: bash
-        run: |
-          echo "Checking Terraform directory..."
-
-          if [ -d "./enviroment/preprod" ]; then
-            echo "Terraform directory exists ✅"
-            ls -la ./enviroment/preprod
-          else
-            echo "ERROR: ./enviroment/preprod directory does not exist ❌"
-            find . -maxdepth 3 -type d | sort
-            exit 1
-          fi
 
       - name: Azure Login
         uses: azure/login@v2
@@ -50,15 +33,15 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Verify Azure Login
-        shell: bash
         run: |
           az account show
+          az account show --query "{Subscription:id,Tenant:tenantId,Name:name}" -o table
 
       - name: Terraform Init
         working-directory: ./enviroment/preprod
         run: terraform init
 
-      - name: Terraform Format Check
+      - name: Terraform Format
         working-directory: ./enviroment/preprod
         run: terraform fmt -check -recursive
 
