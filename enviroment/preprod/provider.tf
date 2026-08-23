@@ -6,9 +6,9 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "rg_god"
-    storage_account_name = "rahul007"
-    container_name       = "tfstate"
+    resource_group_name  = "rg-demo"
+    storage_account_name = "sttfstate19082026"
+    container_name       = "tfstate2"
     key                  = "preprod.tfstate"
   }
 }
